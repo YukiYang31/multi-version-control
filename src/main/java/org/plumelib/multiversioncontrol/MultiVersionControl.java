@@ -359,7 +359,7 @@ public class MultiVersionControl {
   public List<String> ignoreDir = new ArrayList<>();
 
   /** Files, each a directory, corresponding to strings in {@link ignoreDir}. */
-  private Set<File> ignoreDirs = new LinkedHashSet<>();
+  private @Modifiable Set<File> ignoreDirs = new LinkedHashSet<>();
 
   // These *-executable command-line options are handy:
   //  * if you want to use a specific version of the program
@@ -986,7 +986,7 @@ public class MultiVersionControl {
    * @param checkouts the set to populate; is side-effected by this method
    * @param ignoreDirs directories not to search within
    */
-  private static void findCheckouts(File dir, Set<Checkout> checkouts, Set<File> ignoreDirs) {
+  private static void findCheckouts(File dir, @Growable Set<Checkout> checkouts, Set<File> ignoreDirs) {
     if (!dir.isDirectory()) {
       // This should never happen, unless the directory is deleted between
       // the call to findCheckouts and the test of isDirectory.
