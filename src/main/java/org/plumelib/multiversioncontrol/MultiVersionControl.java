@@ -131,7 +131,7 @@ import org.tmatesoft.svn.core.wc.SVNWCClient;
  *         <li id="option:search"><b>--search=</b><i>boolean</i>. If true, search for all clones,
  *             not just those listed in a file. [default: false]
  *         <li id="option:search-prefix"><b>--search-prefix=</b><i>boolean</i>. If true, search for
- *             all clones whose directory is a prefix of one in the cofiguration file. [default:
+ *             all clones whose directory is a prefix of one in the configuration file. [default:
  *             false]
  *         <li id="option:dir"><b>--dir=</b><i>string</i> {@code [+]}. Directory under which to
  *             search for clones, when using {@code --search} [default home directory]
@@ -278,7 +278,7 @@ import org.tmatesoft.svn.core.wc.SVNWCClient;
 // The "list" command should be in the .mvc-checkouts file format, rather
 // than requiring the user to munge it.
 
-// In checkouts file, use of space delimiter for specifyng module interacts
+// In checkouts file, use of space delimiter for specifying module interacts
 // badly with file names that contain spaces.  This doesn't seem important
 // enough to fix.
 
@@ -340,7 +340,7 @@ public class MultiVersionControl {
   public boolean search = false;
 
   /**
-   * If true, search for all clones whose directory is a prefix of one in the cofiguration file.
+   * If true, search for all clones whose directory is a prefix of one in the configuration file.
    * This is especially useful when working with <a
    * href="https://github.com/plume-lib/manage-git-branches">manage-git-branches</a>.
    */
@@ -804,7 +804,7 @@ public class MultiVersionControl {
    * @param file the .mvc-checkouts file
    * @param checkouts the set to populate; is side-effected by this method
    * @param searchPrefix if true, search for all clones whose directory is a prefix of one in the
-   *     cofiguration file
+   *     configuration file
    * @throws IOException if there is trouble reading the file (or file system?)
    */
   static void readCheckouts(File file, @Growable Set<Checkout> checkouts, boolean searchPrefix)
@@ -1095,8 +1095,10 @@ public class MultiVersionControl {
 
     String pathInRepo = FilesPlume.readString(repositoryFile.toPath()).trim();
     @NonNull File repoFileRoot = new File(pathInRepo);
-    while (repoFileRoot.getParentFile() != null) {
-      repoFileRoot = repoFileRoot.getParentFile();
+    for (File parent = repoFileRoot.getParentFile();
+        parent != null;
+        parent = repoFileRoot.getParentFile()) {
+      repoFileRoot = parent;
     }
 
     // strip common suffix off of local dir and repo url
@@ -1294,10 +1296,11 @@ public class MultiVersionControl {
         && r2 != null
         && (p2Limit == null || !r2.equals(p2Limit))
         && r1.getName().equals(r2.getName())) {
-      if (p1Contains != null && !new File(r1.getParentFile(), p1Contains).isDirectory()) {
+      File r1Parent = r1.getParentFile();
+      if (p1Contains != null && !new File(r1Parent, p1Contains).isDirectory()) {
         break;
       }
-      r1 = r1.getParentFile();
+      r1 = r1Parent;
       r2 = r2.getParentFile();
     }
     if (debug) {
@@ -1455,7 +1458,7 @@ public class MultiVersionControl {
           assert false;
         }
       }
-      // The \r* is necessary here; (somtimes?) there are two carriage returns.
+      // The \r* is necessary here; (sometimes?) there are two carriage returns.
       replacers.add(
           new Replacer(
               "(remote: )?Warning: untrusted X11 forwarding setup failed: xauth key data not"
@@ -1635,7 +1638,7 @@ public class MultiVersionControl {
               replacers.add(
                   new Replacer(
                       "(^|\\n)# Your branch is ahead of .*\\n",
-                      "$1unpushed changesets: " + pb.directory() + "\n"));
+                      "$1unpushed changesets: " + dir + "\n"));
               replacers.add(new Replacer("(^|\\n)([?][?]) ", "$1$2 " + dir + "/"));
               replacers.add(
                   new Replacer(
@@ -1645,7 +1648,7 @@ public class MultiVersionControl {
               replacers.add(
                   new Replacer(
                       "(^|\\n)# Your branch is behind .*\\n",
-                      "$1unpushed changesets: " + pb.directory() + "\n"));
+                      "$1unpushed changesets: " + dir + "\n"));
 
               // Could remove all other output, but this could suppress messages
               // replacers.add(new Replacer("(^|\\n)#.*\\n", "$1"));
@@ -1685,7 +1688,7 @@ public class MultiVersionControl {
               replacers.add(
                   new Replacer(
                       "^comparing with .*\\nsearching for changes\\nchangeset[^\001]*",
-                      "unpushed changesets: " + pb.directory() + "\n"));
+                      "unpushed changesets: " + dir + "\n"));
               replacers.add(
                   new Replacer(
                       "^\\n?comparing with .*\\nsearching for changes\\nno changes found\n", ""));
@@ -1693,8 +1696,7 @@ public class MultiVersionControl {
               addArgs(pb3, hgArg);
               // Shelve is an optional extension, so don't print anything if not installed.
               replacers3.add(new Replacer("^hg: unknown command 'shelve'\\n(.*\\n)+", ""));
-              replacers3.add(
-                  new Replacer("^(.*\\n)+", "shelved changes: " + pb.directory() + "\n"));
+              replacers3.add(new Replacer("^(.*\\n)+", "shelved changes: " + dir + "\n"));
             }
             case SVN -> {
               // Handle some changes.
@@ -1946,7 +1948,6 @@ public class MultiVersionControl {
     @SuppressWarnings({"value"}) // ProcessBuilder.command() returns a non-empty list
     String @MinLen(1) [] args = (String @MinLen(1) []) pb.command().toArray(new String[0]);
     CommandLine cmdLine = new CommandLine(args[0]); // constructor requires executable name
-    @SuppressWarnings("nullness") // indices are in bounds, so no null values in resulting array
     String[] argArray = Arrays.copyOfRange(args, 1, args.length);
     cmdLine.addArguments(argArray);
     DefaultExecuteResultHandler resultHandler = new DefaultExecuteResultHandler();
