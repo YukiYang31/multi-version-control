@@ -29,6 +29,7 @@ import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.lock.qual.GuardSatisfied;
 import org.checkerframework.checker.modifiability.qual.Growable;
 import org.checkerframework.checker.modifiability.qual.Modifiable;
+import org.checkerframework.checker.modifiability.qual.IteratorPolyMod;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -352,7 +353,7 @@ public class MultiVersionControl {
    * directory].
    */
   @Option("Directory under which to search for clones; default=home dir")
-  public @Modifiable List<String> dir = new ArrayList<>();
+  public @Modifiable @IteratorPolyMod List<String> dir = new ArrayList<>();
 
   /** Directories under which to NOT search for clones. May include leading "~/". */
   @Option("Directory under which to NOT search for clones")
