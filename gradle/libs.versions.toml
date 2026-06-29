@@ -1,8 +1,8 @@
 [plugins]
 
-com-diffplug-spotless = { id = "com.diffplug.spotless", version = "8.6.0" }
+com-diffplug-spotless = { id = "com.diffplug.spotless", version = "8.7.0" }
 
-com-gradleup-shadow = { id = "com.gradleup.shadow", version = "9.4.2" }
+com-gradleup-shadow = { id = "com.gradleup.shadow", version = "9.4.3" }
 
 net-ltgt-errorprone = { id = "net.ltgt.errorprone", version = "5.1.0" }
 
@@ -20,7 +20,7 @@ checker-qual = { module = "org.checkerframework:checker-qual", version.ref = "ch
 
 commons-exec = "org.apache.commons:commons-exec:1.6.0"
 
-error-prone-core = "com.google.errorprone:error_prone_core:2.49.0"
+error-prone-core = "com.google.errorprone:error_prone_core:2.50.0"
 
 ini4j = "org.ini4j:ini4j:0.5.4"
 

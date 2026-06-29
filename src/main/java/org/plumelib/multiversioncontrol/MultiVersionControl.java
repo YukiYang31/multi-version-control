@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -416,7 +417,7 @@ public class MultiVersionControl {
   @OptionGroup("Diagnostics")
   public boolean show = false;
 
-  /** If true, print the directory before executing commands in it. */
+  /** If true, print the directory (and the origin URL) before executing commands in it. */
   @Option("Print the directory before executing commands")
   public boolean printDirectory = false;
 
@@ -520,6 +521,7 @@ public class MultiVersionControl {
           System.out.printf("Searching added %d checkouts%n", checkouts.size() - oldCheckouts);
         }
       }
+      System.out.flush();
     }
 
     if (debug) {
@@ -527,6 +529,7 @@ public class MultiVersionControl {
       for (Checkout c : checkouts) {
         System.out.println("  " + c);
       }
+      System.out.flush();
     }
     mvc.process(checkouts);
   }
@@ -1248,6 +1251,7 @@ public class MultiVersionControl {
       System.out.println("repoRoot = " + repoRoot);
       System.out.println(" repoUrl = " + url);
       System.out.println("    dirRelative = " + dirRelative.toString());
+      System.out.flush();
     }
 
     assert url.toString().startsWith(repoRoot.toString()) : "repoRoot=" + repoRoot + ", url=" + url;
@@ -1306,6 +1310,7 @@ public class MultiVersionControl {
     }
     if (debug) {
       System.out.printf("removeCommonSuffixDirs => %s %s%n", r1, r2);
+      System.out.flush();
     }
     return new FilePair(r1, r2);
   }
@@ -1338,7 +1343,7 @@ public class MultiVersionControl {
    * A Replacer does string substitution, to make output more user-friendly. Examples are
    * suppressing noise output or expanding relative file names.
    */
-  private static class Replacer {
+  static class Replacer {
     /** The regular expression matching text that should be replaced. */
     Pattern regexp;
 
@@ -1386,6 +1391,10 @@ public class MultiVersionControl {
     // pb4 is only for checking whether there are no commits in this branch.
     ProcessBuilder pb4 = new ProcessBuilder(new ArrayList<>());
     pb4.redirectErrorStream(true);
+    // pb5 is only for printing the origin URL.
+    ProcessBuilder pb5 =
+        new ProcessBuilder(List.of(gitExecutable, "config", "--get", "remote.origin.url"));
+    pb5.redirectErrorStream(true);
 
     // I really want to be able to redirect output to a Reader, but that
     // isn't possible.  I have to send it to a file.
@@ -1396,6 +1405,7 @@ public class MultiVersionControl {
     for (Checkout c : checkouts) {
       if (debug) {
         System.out.println(c);
+        System.out.flush();
       }
       File dir = c.directory;
 
@@ -1846,6 +1856,8 @@ public class MultiVersionControl {
 
       if (printDirectory) {
         System.out.println(dir + " :");
+        pb5.directory(dir);
+        perform_command(pb5, Collections.emptyList(), true);
       }
       perform_command(pb, replacers, showNormalOutput);
       if (!pb2.command().isEmpty()) {
@@ -1862,6 +1874,7 @@ public class MultiVersionControl {
       //     // System.out.println("No changes committed in " + dir);
       //   }
       // }
+      System.out.flush();
     }
   }
 
@@ -1929,6 +1942,7 @@ public class MultiVersionControl {
   int perform_command(ProcessBuilder pb, List<Replacer> replacers, boolean showNormalOutput) {
     if (show) {
       System.out.println(command(pb));
+      System.out.flush();
     }
     if (dryRun) {
       return 0;
@@ -1990,6 +2004,7 @@ public class MultiVersionControl {
     if (timedOut) {
       System.out.printf("Timed out (limit: %ss):%n", timeout);
       System.out.println(command(pb));
+      System.out.flush();
       // Don't return; also show the output
     }
 
@@ -2060,6 +2075,7 @@ public class MultiVersionControl {
         }
       }
     }
+    System.out.flush();
 
     return exitValue;
   }
